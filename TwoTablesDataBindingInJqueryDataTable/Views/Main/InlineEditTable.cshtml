@@ -1,0 +1,326 @@
+﻿
+@{
+    ViewBag.Title = "InlineEditTable";
+}
+<style>    input {
+        width:110px;
+    }
+    select {
+        height:27px;
+    }
+    .edit {
+        background-color:deepskyblue;
+        border:solid 1px deepskyblue;
+        border-radius:10px;
+        color:black;
+    }
+    .delete {
+        background-color: indianred;
+        border: solid 1px indianred;
+        border-radius: 10px;
+        color: black;
+    }
+</style>
+<h2>InlineEditTable</h2><br/><br/>
+<div class="table-responsive">
+    <table id="studentTable" class="table table-bordered table-hover text-center">
+        <thead>
+            <tr>
+                <th class="text-center">Sno</th>
+                <th class="text-center">Student</th>
+                <th class="text-center">Course</th>
+                <th class="text-center">Start Date</th>
+                <th class="text-center">Grade</th>
+                <th class="text-center">Edit Action</th>
+                <th class="text-center">Delete Action</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="~/Content/DataTables/css/dataTables.jqueryui.min.css" rel="stylesheet" />
+@section scripts{
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/dateFormat.js"></script>
+  
+    <script>
+        var dataTable, ddl,setName,setCourseId,setGrade,setDate,sendId;
+        $(document).ready(function () {
+            //debugger;
+            ddl =@Html.Raw(Json.Encode(ViewBag.courses));
+            console.log(ddl);
+
+            $('#add_button').tooltip;
+            $('#edit_button').tooltip;
+            $('#delete_button').tooltip;
+
+            BindingJqueryTable();
+            $('#studentTable').on('click', 'tbody td .delete', function (e) {
+                debugger;
+                var clickedRow = $($(this).closest('td')).closest('tr');
+                var Index = clickedRow.index();
+                var rowData = dataTable.row(Index).data();
+                Delete(rowData.StudentId)
+
+            });
+            //edit code start
+            $('#studentTable').on('click', 'tbody td .edit', function (e) {
+                debugger;
+                fnResetControls();
+
+                var clickedRow = $($(this).closest('td')).closest('tr');
+                var Index = clickedRow.index();
+                var rowData = dataTable.row(Index).data();
+                console.log(rowData);
+                $(clickedRow).find('td').each(function () {
+              //      debugger;
+                    // do your cool stuff
+                    //console.log(clickedRow);
+                    //console.log($(this))
+                    if ($(this).hasClass('editable')) {
+                        //debugger;
+                        if ($(this).hasClass('text')) {
+                            //debugger;
+                            var html = fnCreateTextBox($(this).html(), 'data');
+                            $(this).html($(html))
+                        }
+                        if ($(this).hasClass('date')) {
+                            //debugger;
+                            var html = fnCreateDateInput($(this).html(), 'StartDate');
+                            $(this).html($(html))
+                        }
+                        if ($(this).hasClass('dropdown')) {
+                           // debugger;
+
+                            var html = fnCreateDropdown($(this).html(), 'CourseName');
+                            $(this).html($(html))
+                        }
+                    }
+                });
+
+
+                $('#studentTable tbody tr td .update').removeClass('update').addClass('edit').html('Edit');
+                $('#studentTable tbody tr td .cancel').removeClass('cancel').addClass('delete').html('Delete');
+                $(clickedRow).find('td .edit').removeClass('edit').addClass('update').html('Update');
+                $(clickedRow).find('td .delete').removeClass('delete').addClass('cancel').html('Cancel');
+
+            });
+            //edit code end
+
+            //cancel code start
+            $('#studentTable').on('click', 'tbody td .cancel', function (e) {
+                //debugger;
+                fnResetControls();
+                $('#studentTable tbody tr td .update').removeClass('update').addClass('edit').html('Edit');
+                $('#studentTable tbody tr td .cancel').removeClass('cancel').addClass('delete').html('Delete');
+            });
+
+
+            //cancel code end
+            //update code start
+            $('#studentTable').on('click', 'tbody tr td .update', function (e) {
+                debugger;
+                var clickedRow = $($(this).closest('td')).closest('tr');
+
+                var IndexOfRow = clickedRow.index();
+                var openedTextBox = $('#studentTable').find('input');
+                var multipleInputs = $('#studentTable').find('select,input');
+                console.log(multipleInputs);
+                var openedDropdown = $('#studentTable').find('select');
+                $.each(openedTextBox, function (k, $cell) {
+                    debugger;
+                    var columnValue = $(openedTextBox[k]).closest('td').index();
+                    var x=$cell.value.split("-").reverse().join("/");
+                    dataTable.cell(IndexOfRow, columnValue).data(x);
+                    $(openedTextBox[k]).closest('td').html($cell.value.split("-").reverse().join("/"));
+                })
+                $.each(openedDropdown, function (k, $cell) {
+                    debugger;
+                    var columnValue = $(openedDropdown[k]).closest('td').index();
+                    dataTable.cell(IndexOfRow, columnValue).data($cell.selectedOptions[0].innerHTML);
+                    setCourseId = $cell.value;
+                    $(openedDropdown[k]).closest('td').html($cell.selectedOptions[0].innerHTML);
+                })
+                var rowData = dataTable.row(IndexOfRow).data();
+                console.log(rowData);
+                debugger;
+                sendId = rowData.StudentId;
+                setName = rowData.StudentName;
+                //setCourseId = rowData.CourseId;
+                setGrade = rowData.Grade;
+                //var result = rowData.StartDate;
+                //var nowDate = new Date(parseInt(setDate.substr(6)));
+
+                // setDate = nowDate.format("dd/mm/yyyy");
+                setDate = rowData.StartDate;
+                Save();
+               
+               
+                $('#studentTable tbody tr td .update').removeClass('update').addClass('edit').html('Edit');
+                $('#studentTable tbody tr td .cancel').removeClass('cancel').addClass('delete').html('Delete');
+               
+            });
+
+            //update code end
+
+        });
+
+          function Delete(id) {
+            debugger;
+            console.log("DeleteRecord?")
+            if (confirm('Are You Sure to Delete this Customer Record?')) {
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete","Main")/'+id ,
+                    success: function (data) {
+                        if (data.success) {
+
+                            dataTable.ajax.reload();
+                            alert(data.message);
+
+                        }
+                        //window.location.href = "/Main/Index";
+                    }
+                })
+
+            }
+
+
+        }
+
+        function fnCreateTextBox(value, fieldprop) {
+            //debugger;
+            return '<input data-field="' + fieldprop + '" type="text" value="' + value + '" ></input>';
+        }
+        function fnCreateDropdown(value, fieldprop) {
+            //debugger;
+            var initial = value;
+            
+            var ddlCourses = $('<select id="drpcourse" data-field="' + fieldprop + '" ></select>');
+            $.each(ddl, function (index, value) {
+                debugger;
+
+                var option = $("<option />");
+                
+                if (initial == value.Text) {
+                    option.html(value.Text);
+                    option.val(value.Value);
+                    option.attr('selected','selected');
+                } else {
+                    option.html(value.Text);
+                    option.val(value.Value);
+                }
+                ddlCourses.append(option);
+            });
+
+
+            return ddlCourses;
+        }
+        function fnCreateDateInput(value, fieldprop) {
+            debugger;
+
+            result = value.split("/").reverse().join("-");
+            return '<input data-field="' + fieldprop + '" type="date" value="' + result + '" ></input>';
+        }
+
+        function BindingJqueryTable() {
+            dataTable = $("#studentTable").DataTable({
+                "ajax": {
+                    "url": "/Main/GetData",
+                    "type": "GET",
+                    "datatype": "json",
+
+                },
+                "columns": [
+                    {
+                        "data": "Sno", "render": function (data, type, full, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { "data": "StudentName", class: 'editable text' },
+
+                    { "data": "CourseName", class: 'editable dropdown' },
+                    {
+                        "data": "StartDate", "render": function (data) {
+                            if (data != null) {
+                                var ddd = parseInt(data.substr(6, data.length - 7));
+                                var date = new Date(ddd);
+                                var month = date.getMonth() + 1;
+                                var day = date.getDate();
+                                return (day.toString().length > 1 ? day : "0" + day) + "/" + (month.toString().length > 1 ? month : "0" + month) + "/" + date.getFullYear();
+
+                            }
+                        }, class: 'editable date'
+                    },
+                    { "data": "Grade", class: 'editable text'},
+                    {
+                        "data": "StudentId", @*render: function (data) {
+                        return "<a class='btn btn-info' id='edit_button' data-toggle='modal' data-target='#studentDetails' title='Edit' onclick=Edit('@Url.Action("Edit","Main")/" + data +"')>Edit!!</a>";
+                        }*@render: function (data, type, row) {
+                            return createButton('edit', row.id);
+                        }
+                    },
+                    {
+                        "data": "StudentId", @*render: function (data) {
+                        return "<a class='btn btn-danger' title='Delete' id='delete_button' onclick=Delete('"+data+"')>Delete!</a>";
+                        }*@render: function (data, type, row) {
+                            return createButton('delete', row.id);
+                        }
+                    },
+                ],
+                "language": {
+                    "zeroRecords": "No data found, Please click on <b>Add New</b> Button",
+
+                },
+                //"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                //    $("td:first", nRow).html(iDisplayIndex + 1);
+                //    return nRow;
+                //}, 
+
+            });
+
+        }
+        function createButton(buttonType, rowID) {
+
+            var buttonText = buttonType == "edit" ? "Edit" : "Delete";
+            return '<button class="' + buttonType + '" type="button">' + buttonText + '</button>';
+        }
+
+        function fnResetControls() {
+            var openedTextBox = $('#studentTable').find('input');
+            var openedDropdown = $('#studentTable').find('select');
+            $.each(openedTextBox, function (k, $cell) {
+                $(openedTextBox[k]).closest('td').html($cell.value.split("-").reverse().join("/"));
+            })
+            $.each(openedDropdown, function (k, $cell) {
+                $(openedDropdown[k]).closest('td').html($cell.selectedOptions[0].innerHTML);
+            })
+        }
+       
+        function Save() {
+            debugger;
+            var details = { setName, setCourseId, setGrade, setDate };
+            console.log(details);
+            $.ajax({
+                type: "POST",
+                url: "/Main/Update",
+                data: { setName: setName, setCourseId: setCourseId, setGrade: setGrade, setDate: setDate, sendId: sendId },
+                success: function (response) {
+                    if (response) {
+                        dataTable.ajax.reload();
+                        alert(response.message);
+                    }
+                   // window.location.href = "/Main/Index";
+                }
+            });
+
+        }
+
+    </script>
+
+}

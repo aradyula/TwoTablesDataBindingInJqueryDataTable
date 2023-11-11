@@ -1,0 +1,379 @@
+﻿
+@{
+
+    ViewBag.Title = "ExpandCollapaseTable";
+}
+
+<h2 class="text-center" style="margin-bottom:20px;">ExpandCollapaseTable</h2>
+<style>
+    #studentForm {
+        display: flex;
+        flex-direction: column;
+        padding:10px;
+    }
+    table.dataTable td.dt-control {
+        text-align: center;
+        cursor: pointer;
+    }
+
+    table.dataTable tr.dt-hasChild td.dt-control:before {
+        content: "▼";
+    }
+
+    table.dataTable td.dt-control:before {
+        display: inline-block;
+        color: rgba(0, 0, 0, 0.5);
+        content: "►";
+    }
+</style>
+<div class="details-container" style="margin-left:120px;margin-right:120px;border:solid;">
+    <form id="studentForm">
+        <input type="hidden" id="StudentId" name="StudentId"/>
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <label class="control-label" for="StudentName"> Student Name:</label>
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="StudentName" name="StudentName"/>
+            </div>
+           
+            <div class="col-sm-2">
+                <label class="control-label" for="FOGName"> Father/Guardian:</label>
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control"  id="FOGName" name="FOGName"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <label class="control-label" for="CourseId"> Course Name: </label>
+            </div>
+            <div class="col-sm-4">
+                @*<input type="text" class="form-control" />*@
+                <select class="form-control" id="CourseId" name="CourseId">
+                    <option>---Please Select---</option>
+                    <option value="1">Python</option>
+                    <option value="2">ASP.NET</option>
+                    <option value="3">JavaScript</option>
+                    <option value="4">CSharp</option>
+                    <option value="5">HTML</option>
+                    <option value="6">CSS</option>
+                    <option value="7">BootStrap</option>
+                    <option value="8">SQL</option>
+                </select>
+            </div>
+            
+            <div class="col-sm-2">
+                <label class="control-label" for="Grade">Grade:</label>
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control"  id="Grade" name="Grade"/>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <label class="control-label" for="StartDate"> Start Date: </label>
+            </div>
+            <div class="col-sm-4">
+                <input type="date" class="form-control"  id="StartDate" name="StartDate"/>
+            </div>
+            
+            <div class="col-sm-2">
+                <label class="control-label" for="DOB"> DOB: </label>
+            </div>
+            <div class="col-sm-4">
+                <input type="date" class="form-control" id="DOB" name="DOB"/>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <label class="control-label" for="Fee"> Fee: </label>
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control"  id="Fee" name="Fee"/>
+            </div>
+          
+            <div class="col-sm-2">
+                <label class="control-label" for="Status"> Status:</label>
+            </div>
+            <div class="col-sm-4">
+                <input type="checkbox" id="Status" name="Status"/><span>&nbsp;Completed</span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-2">
+                <label class="control-label" for="Address"> Address:</label>
+            </div>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="Address" name="Address"></textarea>
+            </div>
+            
+        </div>
+        <div class="form-group row text-right" style="padding-right:20px">
+            <input type="button" value="Save" class="btn btn-primary" id="savebutton" onclick="Save()"/>
+            <input type="button" value="Cancel" class="btn btn-default" />
+        </div>
+    </form>
+</div>
+
+<div style="margin:50px">
+    <table id="studentTable" class="table table-bordered table-hover text-center">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="text-center">Sno</th>
+                <th class="text-center">Student</th>
+                <th class="text-center">Course</th>
+                <th class="text-center">Start Date</th>
+                <th class="text-center">Grade</th>
+                @*<th class="text-center">Edit Action</th>*@
+                <th class="text-center">Delete Action</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+<link href="~/Content/DataTables/css/dataTables.jqueryui.min.css" rel="stylesheet" />
+@section scripts{
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    @*<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>*@
+    <script src="~/Scripts/DataTables/jquery.dataTables.js"></script>
+    <script src="~/Scripts/dateFormat.js"></script>
+
+    <script>
+        var dataTable;
+        $(document).ready(function () {
+            //debugger;
+
+
+            $('#add_button').tooltip;
+            $('#edit_button').tooltip;
+            $('#delete_button').tooltip;
+
+            BindingJqueryTable();
+            dataTable.rows().every(function () {
+                debugger;
+                var data = this.data();
+                
+                console.log(data);
+            });
+            $('#studentTable').on('click', 'tbody tr ', function (e) {
+                debugger;
+                
+               // console.log($(this).closest('tr')[0]._DT_RowIndex)
+                let row = dataTable.row($(this).closest('tr')[0]._DT_RowIndex).data();
+                console.log(row.StudentId);
+                Edit(row.StudentId);
+            });
+
+            $("#studentTable").on('click', 'td.dt-control', function (e) {
+                //debugger;
+
+                let tr = e.target.closest('tr');
+
+                let row = dataTable.row(tr);
+
+
+                if (row.child.isShown()) {
+                    // This row is already open - close it
+                    $("#studentTable td.dt-control").closest('tr').removeClass('dt-hasChild');
+                    row.child.hide();
+                }
+                else {
+                    // Open this row
+
+
+                    $($(this).closest('td')).closest('tr').addClass('dt-hasChild')
+
+                    row.child(format(row.data())).show();
+                }
+            });
+
+        });
+        function format(d) {
+            // `d` is the original data object for the row
+            return (
+
+                '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                '<tr>' + '<td>StudentId:</td>' + '<td>' + d.StudentId + '</td>' + '</tr>' +
+                '<tr>' + '<td>StudentName:</td>' + '<td>' + d.StudentName + '</td>' + '</tr>' +
+                '<tr>' + '<td>CourseName:</td>' + '<td>' + d.CourseName + '</td>' + '</tr>' +
+                '</table>'
+            );
+        }
+
+
+
+        function BindingJqueryTable() {
+            debugger;
+            dataTable = $("#studentTable").DataTable({
+                "ajax": {
+                    "url": "/Main/GetData",
+                    "type": "GET",
+                    "datatype": "json",
+                    //"pageLength": 5,
+                    //"lengthMenu": [[5, 10, 20, -1], [5, 10, 20, 'All']],
+
+                },
+              
+                "columns": [
+                    {
+                        className: 'dt-control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: ""},
+                    {
+                        "data": "Sno", "render": function (data, type, full, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { "data": "StudentName", class: 'editable text' },
+
+                    { "data": "CourseName", class: 'editable dropdown' },
+                    {
+                        "data": "StartDate", "render": function (data) {
+                            if (data != null) {
+                                var ddd = parseInt(data.substr(6, data.length - 7));
+                                var date = new Date(ddd);
+                                var month = date.getMonth() + 1;
+                                var day = date.getDate();
+                                return (day.toString().length > 1 ? day : "0" + day) + "/" + (month.toString().length > 1 ? month : "0" + month) + "/" + date.getFullYear();
+
+                            }
+                        }, class: 'editable date'
+                    },
+                    { "data": "Grade", class: 'editable text'},
+                    @*{
+                        "data": "StudentId", render: function (data) {
+                        return "<a class='btn btn-info' id='edit_button' data-toggle='modal' data-target='#studentDetails' title='Edit' onclick=Edit('@Url.Action("Edit","Main")/" + data +"')>Edit!!</a>";
+                            }
+                           // render: function (data, type, row) {
+                        //    return createButton('edit', row.id);
+                        //}
+                    },*@
+                    {
+                        "data": "StudentId", render: function (data) {
+                        return "<a class='btn btn-danger' title='Delete' id='delete_button' onclick=Delete('"+data+"')>Delete!</a>";
+                        }
+                        ////render: function (data, type, row) {
+                        ////    return createButton('delete', row.id);
+                        ////}
+                    },
+                ],
+                "language": {
+                    "zeroRecords": "No data found, Please click on <b>Add New</b> Button",
+
+                },
+
+
+            });
+
+        }
+          function Delete(id) {
+            debugger;
+            console.log("DeleteRecord?")
+            if (confirm('Are You Sure to Delete this Student Record?')) {
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete","Main")/'+id ,
+                    success: function (data) {
+                        if (data.success) {
+
+                            dataTable.ajax.reload();
+                            alert(data.message);
+
+                        }
+                        window.location.href = "/Main/Index";
+                    }
+                })
+
+            }
+
+
+        }
+        function Edit(id) {
+            debugger;
+            if (confirm('Are You Sure to Edit this Student Record?')) {
+                //$('#title').text('Edit Student Record');
+                //var formDetails = $("#studentForm").serialize();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Edit","Main")/' + id,
+                    datatype: "json",
+                    success: function (formDetails) {
+                        debugger;
+                        console.log(formDetails);
+                        $("#StudentId").val(formDetails.StudentId);
+                        $("#StudentName").val(formDetails.StudentName);
+                        $("#StudentName").prop('readonly', 'true');
+                        $("#CourseId").val(formDetails.CourseId);
+                        var sd = formDetails.StartDate;
+                        var ddd = parseInt(sd.substr(6, sd.length - 7));
+                        var date = new Date(ddd);
+                        var day = date.getDate();
+                        var month = date.getMonth() + 1;
+                        var startDate = date.getFullYear() + "-" + (month.toString().length > 1 ? month : "0" + month) + "-" + (day.toString().length > 1 ? day : "0" + day);
+                        $("#StartDate").val(startDate);
+                        $("#Grade").val(formDetails.Grade);
+                        $("#Fee").val(formDetails.Fee);
+                        $("#Address").val(formDetails.Address);
+                        console.log(formDetails.DOB)
+                        if (formDetails.DOB != null) {
+                            var db = formDetails.DOB;
+                            var bdd = parseInt(db.substr(6, db.length - 7));
+                            var bdate = new Date(bdd);
+                            var month = bdate.getMonth() + 1;
+                            var bday = bdate.getDate();
+                            var dateBirth = bdate.getFullYear() + "-" + (month.toString().length > 1 ? month : "0" + month) + "-" + (bday.toString().length > 1 ? bday : "0" + bday);
+                            $("#DOB").val(dateBirth);
+                        }
+                        var completed = formDetails.Status;
+                        debugger
+                        if (completed) {
+                            $("#Status").prop('checked', true);
+                        }
+                        else {
+                            $("#Status").prop('checked', false);
+                        }
+
+                        $("#FOGName").val(formDetails.FOGName);
+
+                    }
+                });
+            }
+
+
+
+        }
+
+        function Save() {
+            debugger;
+            var formDetails = $("#studentForm").serialize();
+            
+            $.ajax({
+                type: "POST",
+                url: "/Main/Save",
+                data: formDetails,
+                success: function (response) {
+                    if (response) {
+                        dataTable.ajax.reload();
+                        alert(response.message);
+                    }
+                    window.location.href = "/Main/Index";
+                }
+            })
+        };
+
+
+
+
+
+    </script>
+
+}

@@ -1,0 +1,579 @@
+﻿@model TwoTablesDataBindingInJqueryDataTable.ViewModel.StudentVM
+
+<div class="row" style="margin-bottom:20px">
+    <div class="col-sm-3"><h2>Student Table</h2></div>
+    <div class="col-sm-3">
+        <label for="from-date">StartDate From:</label>
+
+
+        <input type="date" name="from-date" id="from-date" class="form-control" />
+
+    </div>
+    <div class="col-sm-3">
+        <label for="to-date">StartDate To:</label>
+
+
+        <input type="date" name="to-date" id="to-date" class="form-control" />
+
+    </div>
+    <div class="col-sm-3">
+        <p>
+            <a class="btn btn-success pull-right" data-toggle="modal" data-target="#studentDetails" style="margin:10px" id="add_button" title="Add Student">Add Student</a>
+        </p>
+    </div>
+
+</div>
+@*<div class="row" style="margin-bottom:10px">
+        <label for="from-date" class="col-sm-2 text-right">StartDate From:</label>
+        <div class="col-sm-4">
+
+            <input type="date" name="from-date" id="from-date" class="form-control" />
+        </div>
+        <label for="from-date" class="col-sm-2 text-right">StartDate To:</label>
+        <div class="col-sm-4">
+
+            <input type="date" name="to-date" id="to-date" class="form-control" />
+        </div>
+    </div>*@
+@*<label for="from-date" class="col-sm-1 text-right">Course:</label>
+    <div class="col-sm-2">
+        @Html.DropDownListFor(model => model.CourseId, ViewBag.courseList as SelectList, "---All Courses---", new { @class = "form-control", @id = "FilterCourse" })
+    </div>*@
+
+
+<div class="row" style="margin-bottom:20px">
+    <label for="filter_based" class="col-sm-1">Filter On:</label>
+    <div class=" col-sm-3">
+
+        <select id="filter_based" name="filter_based" class="form-control text-left">
+            <option value="">---Select Filter---</option>
+            <option value="Student">Student</option>
+            <option value="Course">Course</option>
+            <option value="Grade">Grade</option>
+        </select>
+    </div>
+    <div id="text-container" class="col-sm-4"></div>
+    <div class="col-sm-4 text-right">
+
+        <button id="apply" class="btn btn-info" title="Filter"><span class="glyphicon glyphicon-filter"></span></button>
+
+
+        <button id="remove" class="btn btn-warning" title="Refresh"><span class="glyphicon glyphicon-refresh"></span></button>
+    </div>
+
+
+</div>
+<div class="row" style="margin-bottom:20px">
+    <div class=" col-sm-3"><a class="btn btn-info" id="export_button" href="../Main/ExcelExport">Export To Excel</a></div>
+</div>
+    <div class="modal fade" id="studentDetails" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header col-12">
+                    <div class="col-sm-6">
+                        <h4 class="modal-title" id="title"> Add Student Record</h4>
+                    </div>
+                    <div class="col-sm-6">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+                    <form id="studentForm">
+                        @Html.HiddenFor(model => model.StudentId)
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.StudentName, new { @class = "control-label" })<span style="color:red">*</span>
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.StudentName, new { htmlAttributes = new { @class = "form-control", @autofocus = "" } })
+                                @Html.HiddenFor(model => model.StudentId)
+                                @Html.ValidationMessageFor(model => model.StudentName, "", new { @class = "text-danger", @id = "name_message" })
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.CourseId, new { @class = "control-label" })<span style="color:red">*</span>
+                            </div>
+                            <div class="col-sm-8">
+                                @*@Html.EditorFor(model => model.CourseId, new { htmlAttributes = new { @class = "form-control" } })*@
+                                @if (ViewBag.courseList != null)
+                                {
+                                    @Html.DropDownListFor(model => model.CourseId, ViewBag.courseList as SelectList, "---Select Course---", new { @class = "form-control", @required = "" })
+                                }
+                                @Html.ValidationMessageFor(model => model.CourseId, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.StartDate, new { @class = "control-label" })<span style="color:red">*</span>
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control", @max = DateTime.Today.ToString("yyyy-MM-dd") } })
+                                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+                            </div>
+
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.Grade, new { @class = "control-label" })
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.Grade, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.Grade, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.Fee, new { @class = "control-label" })
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Rs.</span>
+                                    @Html.EditorFor(model => model.Fee, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Fee, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.Address, new { @class = "control-label" })
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.TextAreaFor(model => model.Address, new { @class = "form-control" })
+                            </div>
+
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.DOB, new { @class = "control-label" })
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.DOB, new { htmlAttributes = new { @class = "form-control", @max = DateTime.Today.ToString("yyyy-MM-dd") } })
+                                @*@Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })*@
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.Status, new { @class = "control-label" })
+                            </div>
+                            <div class="col-sm-8">
+                                @*@Html.EditorFor(model => model.Status, new { htmlAttributes = new { @class = "form-control" } })*@
+                                @Html.CheckBoxFor(model => model.Status)<span>Completed</span>
+                                @*<div class="col-sm-4">
+                                        <span>Completed</span>@Html.RadioButtonFor(Model => Model.Status, "TRUE", htmlAttributes: new { @id = "Yes" })
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <span>In Progress</span>@Html.RadioButtonFor(Model => Model.Status, "FALSE", htmlAttributes: new { @id = "No" })
+                                    </div>*@
+                            </div>
+
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-4">
+                                @Html.LabelFor(model => model.FOGName, new { @class = "control-label" })<span style="color:red">*</span>
+                            </div>
+                            <div class="col-sm-8">
+                                @Html.EditorFor(model => model.FOGName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.ValidationMessageFor(model => model.FOGName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+
+                    <input type="button" value="Save" class="btn btn-primary" id="savebutton" onclick="Save()" />
+                    <input type="button" value="Cancel" class="btn btn-default" data-dismiss="modal" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table id="Tstudent" class="table table-bordered table-hover text-center">
+            <thead>
+                <tr>
+                    <th class="text-center">Sno</th>
+                    <th class="text-center">Student</th>
+                    <th class="text-center">Course</th>
+                    <th class="text-center">Start Date</th>
+                    <th class="text-center">Grade</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/Content/DataTables/css/dataTables.jqueryui.min.css" rel="stylesheet" />
+    @section scripts{
+
+        <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+        <script src="~/Scripts/jquery.validate.min.js"></script>
+        <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+        @*<script src="~/Scripts/DataTables/dataTables.buttons.min.js"></script>
+        <script src="~/Scripts/DataTables/buttons.html5.min.js"></script>*@
+        <script>
+        var dataTable;
+        $(document).ready(function () {
+            debugger;
+            $('#add_button').tooltip;
+            $('#edit_button').tooltip;
+            $('#delete_button').tooltip;
+            $('#apply').tooltip;
+            $('#remove').tooltip;
+            BindDatatable();
+
+            $("#remove").click(function () {
+                $("#from-date").val('');
+                $("#to-date").val('');
+                $("#filter_based").val('');
+                $('#text-container').empty();
+                dataTable.destroy();
+                BindDatatable();
+            });
+
+            $("#apply").click(function () {
+                debugger;
+                sd = $("#from-date").val();
+                ed = $("#to-date").val();
+                dropdown = $("#FilterCourse").val()
+                if (sd > ed || (sd != '' && ed == '') || (sd == '' && ed != '')) {
+                    alert("Please select a valid range");
+                }
+
+                else {
+
+                        dataTable.destroy();
+                        BindDatatable();
+                }
+
+            });
+            $('#Tstudent tbody').on('click', 'td', function () {
+                debugger;
+                var data = dataTable.row(this).data();
+                var columnData = dataTable.columns();
+                var colIndex = dataTable.cell(this).index().column;
+                var rowIndex = dataTable.cell(this).index().row;
+                dataTable.cell(rowIndex, colIndex).data("Rahul")
+                console.log(data);
+                console.log(columnData);
+            });
+            @*$("#export_button").click(function () {
+                debugger;
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("ExcelExport","Main")',
+                    success: function (data) {
+                        //if (data.success) {
+
+                        //    dataTable.ajax.reload();
+                        //    alert(data.message);
+
+                        //}
+                        //window.location.href = "/Main/Index";
+                        console.log(data);
+                    }
+                })
+                
+            });*@
+
+            //$("#StartDate").on("blur", function () {
+            //    debugger;
+            //    if ($("#StartDate").val() == "") {
+            //        alert("please enter valid date")
+            //    }
+            //    //var entered_date = $("#StartDate").val();
+            //    //checking_date = new Date(entered_date)
+            //    //console.log(checking_date);
+
+            //    //var day = checking_date.getDate();
+            //    //var month =checking_date.getMonth()+1;
+            //    //var year = checking_date.getFullYear();
+            //    //if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) {
+            //    //    if (month in [4, 6, 9, 11] && day > 30) {
+
+            //    //        alert("that month does not have 31 days");
+            //    //    }
+
+            //    //    else if (month == 2 && day > 29) {
+
+            //    //        alert("this february does not have more than 29 days")
+
+            //    //    }
+            //    //}
+
+            //    //else {
+            //    //    if (month in [4, 6, 9, 11] && day > 30) {
+
+            //    //        alert("that month does not have 31 days");
+
+            //    //    }
+            //    //    else if (month == 2 && day > 28) {
+
+            //    //        alert("this february does not have more than 28 days")
+
+            //    //    }
+            //    //}
+            //});
+
+            $("#filter_based").on("change", function () {
+                debugger;
+                var value = $("#filter_based").val();
+                switch (value) {
+                    case "Student":
+                        $('#text-container').empty();
+                        $('#text-container').append('<input id="Student-value" type="text" class="form-control" placeholder="Enter Name" autofocus/>');
+                        break;
+                    case "Grade":
+                        $('#text-container').empty();
+                        $('#text-container').append('<input id="Grade-value" type="text" class="form-control" placeholder="Enter Grade" autofocus/>');
+                        break;
+                    case "Course":
+                        $('#text-container').empty();
+                        $('#text-container').append('<select id="FilterCourse" class="form-control" autofocus><option value = "" >--Select Course--</option ><option value="1">Python</option><option value="2">ASP.NET</option><option value="3">JavaScript</option><option value="4">CSharp</option><option value="5">HTML</option><option value="6">CSS</option><option value="7">BootStrap</option><option value="8">SQL</option></select >');
+                        break;
+                    default:
+                        $('#text-container').empty();
+                        break;
+                }
+            });
+
+            $("#studentDetails").on('show.bs.modal', function () {
+                alert('The modal will be displayed now!');
+            });
+
+            $('#add_button').on('click', function () {
+                debugger;
+                $('#title').text('Add Student Record');
+                $("#StudentId").val('');
+                $("#StudentName").focus();
+                $("#StudentName").prop('readonly', false);
+                $("#StudentName").val('');
+                $("#StudentName-error").text('');
+                $("#CourseId").val('');
+                $("#CourseId-error").text('');
+                $("#StartDate").val('');
+                $("#StartDate-error").text('');
+                $("#Grade").val('');
+                $("#Fee").val('');
+                $("#Address").val('');
+                $("#DOB").val('');
+                $("#Status").prop('checked', false);
+                $("#FOGName").val('');
+                $("#FOGName-error").text('');
+            });
+
+        });
+        function BindDatatable() {
+            dataTable = $("#Tstudent").DataTable({
+                "ajax": {
+                    "url": "/Main/GetTable",
+                    "type": "GET",
+                    "datatype": "json",
+                    "data": {
+                        fromDate: $("#from-date").val(),
+                        toDate: $("#to-date").val(),
+                        Course: $("#FilterCourse").val(),
+                        Name: $("#Student-value").val(),
+                        Grade: $("#Grade-value").val(),
+
+                    },
+                },
+                "columns": [
+                    {
+                        "data": "Sno", "render": function (data, type, full, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { "data": "StudentName" },
+
+                    { "data": "CourseName" },
+                    {
+                        "data": "StartDate", "render": function (data) {
+                            if (data != null) {
+                                var ddd = parseInt(data.substr(6, data.length - 7));
+                                var date = new Date(ddd);
+                                var month = date.getMonth() + 1;
+                                var day = date.getDate();
+                                return (day.toString().length > 1 ? day : "0" + day) + "/" + (month.toString().length > 1 ? month : "0" + month) + "/" + date.getFullYear();
+
+                            }
+                        },
+                    },
+                    { "data": "Grade" },
+                    { "data": "StudentId", render: function (data) {
+                        return "<a class='btn btn-info' id='edit_button' data-toggle='modal' data-target='#studentDetails' title='Edit' onclick=Edit('@Url.Action("Edit","Main")/" + data +"')>Edit!!</a>&nbsp;<a class='btn btn-danger' title='Delete' id='delete_button' onclick=Delete('"+data+"')>Delete!</a>";
+                        }
+                    },
+                ],
+                "language": {
+                    "zeroRecords": "No data found, Please click on <b>Add New</b> Button",
+
+                },
+                //"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                //    $("td:first", nRow).html(iDisplayIndex + 1);
+                //    return nRow;
+                //},
+                //"order": [[3, 'desc']],
+                //"columnDefs": [{ "targets": 3, "type": "date-eu" }]
+                //"buttons": ['csv', 'pdf', 'excel'],
+                //dom: 'Bfrtip',
+                //buttons: [
+                //    {
+                //        extend: 'excelHtml5',
+                //        //customize: function (xlsx) {
+                //        //    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                //        //    $('row c[r^="C"]', sheet).attr('s', '3');
+                //        //}
+                //    },
+                //    'pdfHtml5',
+                //    'csvHtml5'
+                //]
+            });
+
+        }
+
+        function Delete(id) {
+            debugger;
+            console.log("DeleteRecord?")
+            if (confirm('Are You Sure to Delete this Customer Record?')) {
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete","Main")/'+id ,
+                    success: function (data) {
+                        if (data.success) {
+
+                            dataTable.ajax.reload();
+                            alert(data.message);
+
+                        }
+                        window.location.href = "/Main/Index";
+                    }
+                })
+
+            }
+
+
+        }
+
+        function Save() {
+            debugger;
+            var formDetails = $("#studentForm").serialize();
+            $.validator.unobtrusive.parse("studentForm");
+            //$.validator.unobtrusive.parse(formDetails);
+            if ($("#studentForm").valid()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Main/Save",
+                    data: formDetails,
+                    success: function (response) {
+                        if (response) {
+                            dataTable.ajax.reload();
+                            alert(response.message);
+                        }
+                        window.location.href = "/Main/Index";
+                    }
+                });
+            }
+
+            else {
+
+                //if ($("#StudentName").val() == '') {
+                //    $('#StudentName').focus();
+                //    alert($('#StudentName').attr('data-val-required'));
+                //}
+                //if ($("#CourseId").val() == '') {
+                //    $('#CourseId').focus();
+                //    alert($('#CourseId').attr('data-val-required'));
+                //}
+                //if ($("#StartDate").val() == '') {
+                //    $('#StartDate').focus();
+                //    alert($('#StartDate').attr('data-val-required'));
+                //}
+                //if ($("#FOGName").val() == '') {
+                //    $('#FOGName').focus();
+                //    alert($('#FOGName').attr('data-val-required'));
+                //}
+                var errors = '';
+                switch (errors) {
+                    case ($("#StudentName").val()):
+                        $('#StudentName').focus();
+                        alert($('#StudentName').attr('data-val-required'));
+                        break;
+                    case ($("#CourseId").val()):
+                        $('#CourseId').focus();
+                        alert($('#CourseId').attr('data-val-required'));
+                        break;
+                    case ($("#StartDate").val()):
+                        $('#StartDate').focus();
+                        alert($('#StartDate').attr('data-val-required'));
+                        break;
+                    case ($("#FOGName").val()):
+                        $('#FOGName').focus();
+                        alert($('#FOGName').attr('data-val-required'));
+                        break;
+
+                }
+            }
+        }
+        function Edit(url) {
+            debugger;
+           $('#title').text('Edit Student Record');
+                var formDetails = $("#studentForm").serialize();
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    datatype: "json",
+                    success: function (formDetails) {
+                        //debugger;
+                        $("#StudentId").val(formDetails.StudentId);
+                        $("#StudentName").val(formDetails.StudentName);
+                        $("#StudentName").prop('readonly','true');
+                        $("#CourseId").val(formDetails.CourseId);
+                        var sd = formDetails.StartDate;
+                        var ddd = parseInt(sd.substr(6, sd.length - 7));
+                        var date = new Date(ddd);
+                        var day = date.getDate();
+                        var month = date.getMonth() + 1;
+                        var startDate = date.getFullYear() + "-" + (month.toString().length > 1 ? month : "0" + month) + "-" + (day.toString().length > 1 ? day : "0" + day);
+                        $("#StartDate").val(startDate);
+                        $("#Grade").val(formDetails.Grade);
+                        $("#Fee").val(formDetails.Fee);
+                        $("#Address").val(formDetails.Address);
+                        console.log(formDetails.DOB)
+                        if (formDetails.DOB != null) {
+                            var db = formDetails.DOB;
+                            var bdd = parseInt(db.substr(6, db.length - 7));
+                            var bdate = new Date(bdd);
+                            var month = bdate.getMonth() + 1;
+                            var bday = bdate.getDate();
+                            var dateBirth = bdate.getFullYear() + "-" + (month.toString().length > 1 ? month : "0" + month) + "-" + (bday.toString().length > 1 ? bday : "0" + bday);
+                            $("#DOB").val(dateBirth);
+                        }
+                        var completed = formDetails.Status;
+                        debugger
+                        if (completed) {
+                            $("#Status").prop('checked', true);
+                        }
+                        else {
+                            $("#Status").prop('checked', false);
+                        }
+
+                        $("#FOGName").val(formDetails.FOGName);
+
+                    }
+                });
+
+
+
+        }
+        </script>
+
+    }
